@@ -4,15 +4,18 @@ utils.py - Shared utilities for the project.
 Usage:  from utils import *
 """
 
-import os
 import json
+import os
 import random
 
+import imagehash
 import numpy as np
+import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 import tensorflow as tf
 import keras
+from PIL import Image
 from sklearn.metrics import (
     accuracy_score,
     classification_report,
@@ -61,6 +64,51 @@ def load_datasets(
     print(f"Classes ({len(class_names)}): {class_names}")
 
     return train_ds, val_ds, test_ds, class_names
+
+
+# ============================================================
+# Data Audit
+# ============================================================
+
+def find_similar_images(
+    data_dir: str,
+    max_distance: int = 5,
+    hash_size: int = 8,
+):
+    """Find near-duplicate images per class in a single directory."""
+
+    def dhash(path):
+        with Image.open(path) as img:
+            return int(str(imagehash.dhash(img, hash_size=hash_size)), 16)
+
+    pairs = []
+    for cls in sorted(os.listdir(data_dir)):
+        cls_dir = os.path.join(data_dir, cls)
+        if not os.path.isdir(cls_dir):
+            continue
+
+        images = []
+        for f in sorted(os.listdir(cls_dir)):
+            path = os.path.join(cls_dir, f)
+            if os.path.isfile(path):
+                images.append((f, dhash(path)))
+
+        for i, (f1, h1) in enumerate(images):
+            for f2, h2 in images[i + 1:]:
+                dist = (h1 ^ h2).bit_count()
+                if dist <= max_distance:
+                    pairs.append({
+                        "class": cls,
+                        "file_a": f1,
+                        "file_b": f2,
+                        "distance": dist,
+                        "similarity": 1 - dist / (hash_size ** 2),
+                    })
+
+    if not pairs:
+        return pd.DataFrame()
+
+    return pd.DataFrame(pairs).sort_values("distance", ignore_index=True)
 
 
 # ============================================================
