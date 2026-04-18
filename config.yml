@@ -19,13 +19,13 @@ batch_size: 32
 models:
   baseline:
     checkpoint: "../models/baseline/baseline_best.keras"
-    history: "../models_results/baseline/baseline_history.json"
+    history: "../models/baseline/baseline_history.json"
     batch_size: 32
   resnet50:
     checkpoint: "../models/resnet50/resnet50_best.keras"
-    history: "../models_results/resnet50/resnet50_history.json"
+    history: "../models/resnet50/resnet50_history.json"
     batch_size: 32
   residual_block:
     checkpoint: "../models/residual_block/residual_block_best.keras"
-    history: "../models_results/residual_block/residual_block_history.json"
+    history: "../models/residual_block/residual_block_history.json"
     batch_size: 32
