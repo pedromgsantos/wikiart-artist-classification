@@ -15,6 +15,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import tensorflow as tf
 import keras
+from keras import layers
 from PIL import Image
 from sklearn.metrics import (
     accuracy_score,
@@ -22,7 +23,9 @@ from sklearn.metrics import (
     confusion_matrix,
     f1_score,
 )
+import yaml
 
+from GPUGuard import GPUGuard
 
 # ============================================================
 # Reproducibility
@@ -39,6 +42,10 @@ def set_seeds(seed: int = 42):
 # ============================================================
 # Data Pipeline
 # ============================================================
+def load_config(config_path: str) -> dict:
+    """Load configuration from a YAML file."""
+    with open(config_path, "r") as f:
+        return yaml.safe_load(f)
 
 def load_datasets(
     train_dir: str,
@@ -64,6 +71,85 @@ def load_datasets(
     print(f"Classes ({len(class_names)}): {class_names}")
 
     return train_ds, val_ds, test_ds, class_names
+
+
+def prepare_dataset_pipeline(
+    train_ds,
+    val_ds,
+    test_ds,
+    seed: int = 42,
+    shuffle_buffer: int = 1000,
+    cache: bool = True,
+):
+    """
+    Apply a consistent tf.data pipeline to all models.
+
+    - Train: optional cache -> shuffle -> prefetch
+    - Val/Test: optional cache -> prefetch
+    """
+    autotune = tf.data.AUTOTUNE
+
+    if cache:
+        train_ds = train_ds.cache()
+        val_ds = val_ds.cache()
+        test_ds = test_ds.cache()
+
+    train_ds = train_ds.shuffle(shuffle_buffer, seed=seed).prefetch(autotune)
+    val_ds = val_ds.prefetch(autotune)
+    test_ds = test_ds.prefetch(autotune)
+
+    return train_ds, val_ds, test_ds
+
+
+def build_standard_augmentation(name: str = "data_augmentation"):
+    """Standard image augmentation used across all training notebooks."""
+    return keras.Sequential([
+        layers.RandomFlip("horizontal"),
+        layers.RandomRotation(0.10),
+        layers.RandomZoom(0.1),
+        layers.RandomBrightness(0.1),
+        layers.RandomContrast(0.1),
+    ], name=name)
+
+
+def build_standard_callbacks(
+    checkpoint_path: str,
+    monitor: str = "val_loss",
+    early_stopping_patience: int = 7,
+    reduce_lr_patience: int = 3,
+    reduce_lr_factor: float = 0.5,
+    min_lr: float = 1e-6,
+    verbose: int = 1,
+):
+    """Build a consistent callback set used across all model trainings."""
+    checkpoint_dir = os.path.dirname(checkpoint_path)
+    if checkpoint_dir:
+        os.makedirs(checkpoint_dir, exist_ok=True)
+
+    early_stop = keras.callbacks.EarlyStopping(
+        monitor=monitor,
+        patience=early_stopping_patience,
+        restore_best_weights=True,
+    )
+
+    reduce_lr = keras.callbacks.ReduceLROnPlateau(
+        monitor=monitor,
+        factor=reduce_lr_factor,
+        patience=reduce_lr_patience,
+        min_lr=min_lr,
+        verbose=verbose,
+    )
+
+    checkpoint_callback = keras.callbacks.ModelCheckpoint(
+        filepath=checkpoint_path,
+        monitor=monitor,
+        save_best_only=True,
+        verbose=verbose,
+    )
+
+    GPUGuard_callback = GPUGuard(max_usage_ratio=0.95)
+
+    return [early_stop, reduce_lr, checkpoint_callback, GPUGuard_callback]
 
 
 # ============================================================
