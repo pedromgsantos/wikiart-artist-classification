@@ -11,8 +11,9 @@ paths:
 # Global Data/Training
 img_size: [224, 224]
 num_classes: 23
-max_epochs: 60
+max_epochs: 200
 seed: 42
+batch_size: 32
 
 # Model-specific configs
 models:
