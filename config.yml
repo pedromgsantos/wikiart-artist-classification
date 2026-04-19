@@ -32,6 +32,9 @@ models:
   efficientnetb3:
       checkpoint: ../models/efficientnetb3_best.keras
       history: ../models/efficientnetb3_history.pkl
+  efficientnetb5:
+      checkpoint: ../models/efficientnetb5_best.keras
+      history: ../models/efficientnetb5_history.json
   vgg16:
     checkpoint: ../models/vgg16_best.keras
     history: ../models/vgg16_history.json
