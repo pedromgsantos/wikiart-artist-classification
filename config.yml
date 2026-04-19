@@ -29,3 +29,6 @@ models:
     checkpoint: "../models/residual_block/residual_block_best.keras"
     history: "../models/residual_block/residual_block_history.json"
     batch_size: 32
+  efficientnetb3:
+      checkpoint: ../models/efficientnetb3_best.keras
+      history: ../models/efficientnetb3_history.pkl
