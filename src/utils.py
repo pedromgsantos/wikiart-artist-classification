@@ -25,8 +25,6 @@ from sklearn.metrics import (
 )
 import yaml
 
-from GPUGuard import GPUGuard
-
 # ============================================================
 # Reproducibility
 # ============================================================
@@ -100,57 +98,18 @@ def prepare_dataset_pipeline(
 
     return train_ds, val_ds, test_ds
 
+def class_weights(train_ds):
+    """Calculate class weights from a tf.data.Dataset for imbalanced training."""
+    class_counts = {}
+    for _, labels in train_ds.unbatch():
+        cls = np.argmax(labels.numpy())
+        class_counts[cls] = class_counts.get(cls, 0) + 1
 
-def build_standard_augmentation(name: str = "data_augmentation"):
-    """Standard image augmentation used across all training notebooks."""
-    return keras.Sequential([
-        layers.RandomFlip("horizontal"),
-        layers.RandomRotation(0.10),
-        layers.RandomZoom(0.1),
-        layers.RandomBrightness(0.1),
-        layers.RandomContrast(0.1),
-    ], name=name)
+    total = sum(class_counts.values())
+    num_classes = len(class_counts)
+    class_weights = {cls: total / (num_classes * count) for cls, count in class_counts.items()}
 
-
-def build_standard_callbacks(
-    checkpoint_path: str,
-    monitor: str = "val_loss",
-    early_stopping_patience: int = 7,
-    reduce_lr_patience: int = 3,
-    reduce_lr_factor: float = 0.5,
-    min_lr: float = 1e-6,
-    verbose: int = 1,
-):
-    """Build a consistent callback set used across all model trainings."""
-    checkpoint_dir = os.path.dirname(checkpoint_path)
-    if checkpoint_dir:
-        os.makedirs(checkpoint_dir, exist_ok=True)
-
-    early_stop = keras.callbacks.EarlyStopping(
-        monitor=monitor,
-        patience=early_stopping_patience,
-        restore_best_weights=True,
-    )
-
-    reduce_lr = keras.callbacks.ReduceLROnPlateau(
-        monitor=monitor,
-        factor=reduce_lr_factor,
-        patience=reduce_lr_patience,
-        min_lr=min_lr,
-        verbose=verbose,
-    )
-
-    checkpoint_callback = keras.callbacks.ModelCheckpoint(
-        filepath=checkpoint_path,
-        monitor=monitor,
-        save_best_only=True,
-        verbose=verbose,
-    )
-
-    GPUGuard_callback = GPUGuard(max_usage_ratio=0.95)
-
-    return [early_stop, reduce_lr, checkpoint_callback, GPUGuard_callback]
-
+    return {int(k): float(v) for k, v in class_weights.items()}
 
 # ============================================================
 # Data Audit
@@ -356,7 +315,6 @@ def plot_per_class_f1(y_true, y_pred, class_names: list[str], title: str = ""):
     plt.tight_layout()
     plt.show()
 
-
 # ============================================================
 # Model Comparison
 # ============================================================
@@ -435,3 +393,50 @@ def load_history(filepath: str) -> dict:
     """Load saved history dict from JSON. Pass to plot_learning_curves()."""
     with open(filepath, "r") as f:
         return json.load(f)
+
+
+# ============================================================
+# Test-Time Augmentation (TTA)
+# ============================================================
+def predict_tta(model, test_ds, n_augmentations=5, batch_size=16):
+    """
+    Perform Test-Time Augmentation (TTA) for a Keras model, batch-by-batch.
+    Returns test_loss, test_accuracy, test_f1, y_true, y_pred, preds_avg.
+    """
+    tta_augmentation = keras.Sequential([
+        layers.RandomFlip("horizontal"),
+        layers.RandomRotation(0.05),
+        layers.RandomZoom(0.05),
+    ])
+
+    y_true = []
+    preds_sum = None
+
+    for images, labels in test_ds:
+        batch_preds = model.predict(images, batch_size=batch_size, verbose=0)
+        batch_preds_sum = batch_preds.copy()
+        for _ in range(n_augmentations):
+            augmented = tta_augmentation(images, training=True)
+            batch_preds_sum += model.predict(augmented, batch_size=batch_size, verbose=0)
+        batch_preds_avg = batch_preds_sum / (n_augmentations + 1)
+        if preds_sum is None:
+            preds_sum = batch_preds_avg
+        else:
+            preds_sum = np.concatenate([preds_sum, batch_preds_avg], axis=0)
+        y_true.extend(np.argmax(labels.numpy(), axis=1))
+
+    preds_avg = preds_sum
+    y_pred = np.argmax(preds_avg, axis=1)
+    y_true = np.array(y_true)
+
+    # Calculate metrics
+    test_loss = None
+    try:
+        test_loss = model.evaluate(test_ds, verbose=0)[0]
+    except Exception:
+        pass
+    test_accuracy = accuracy_score(y_true, y_pred)
+    test_f1 = f1_score(y_true, y_pred, average="macro")
+
+    print(f"TTA Results - Loss: {test_loss:.4f} | Accuracy: {test_accuracy:.4f} | F1: {test_f1:.4f}")
+    return test_loss, test_accuracy, test_f1, y_true, y_pred, preds_avg
