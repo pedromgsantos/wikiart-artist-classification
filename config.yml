@@ -32,3 +32,7 @@ models:
   efficientnetb3:
       checkpoint: ../models/efficientnetb3_best.keras
       history: ../models/efficientnetb3_history.pkl
+  vgg16:
+    checkpoint: ../models/vgg16_best.keras
+    history: ../models/vgg16_history.json
+    batch_size: 32
