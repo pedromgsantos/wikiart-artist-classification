@@ -11,7 +11,7 @@ paths:
 # Global Data/Training
 img_size: [224, 224]
 num_classes: 23
-max_epochs: 200
+max_epochs: 100
 seed: 42
 batch_size: 32
 

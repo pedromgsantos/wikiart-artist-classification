@@ -56,47 +56,18 @@ def load_datasets(
     """
     Load train/val/test as tf.data.Dataset with categorical labels.
     Returns (train_ds, val_ds, test_ds, class_names).
-    Does NOT apply cache/shuffle/prefetch - do that in the notebook.
     """
     common = dict(image_size=img_size, batch_size=batch_size,
                   label_mode="categorical", seed=seed)
 
-    train_ds = keras.utils.image_dataset_from_directory(train_dir, **common)
-    val_ds = keras.utils.image_dataset_from_directory(val_dir, **common)
-    test_ds = keras.utils.image_dataset_from_directory(test_dir, **common)
+    train_ds = keras.utils.image_dataset_from_directory(train_dir, **common,shuffle=True)
+    val_ds = keras.utils.image_dataset_from_directory(val_dir, **common, shuffle=True)
+    test_ds = keras.utils.image_dataset_from_directory(test_dir, **common, shuffle=True)
 
     class_names = train_ds.class_names
     print(f"Classes ({len(class_names)}): {class_names}")
 
     return train_ds, val_ds, test_ds, class_names
-
-
-def prepare_dataset_pipeline(
-    train_ds,
-    val_ds,
-    test_ds,
-    seed: int = 42,
-    shuffle_buffer: int = 1000,
-    cache: bool = True,
-):
-    """
-    Apply a consistent tf.data pipeline to all models.
-
-    - Train: optional cache -> shuffle -> prefetch
-    - Val/Test: optional cache -> prefetch
-    """
-    autotune = tf.data.AUTOTUNE
-
-    if cache:
-        train_ds = train_ds.cache()
-        val_ds = val_ds.cache()
-        test_ds = test_ds.cache()
-
-    train_ds = train_ds.shuffle(shuffle_buffer, seed=seed).prefetch(autotune)
-    val_ds = val_ds.prefetch(autotune)
-    test_ds = test_ds.prefetch(autotune)
-
-    return train_ds, val_ds, test_ds
 
 def class_weights(train_ds):
     """Calculate class weights from a tf.data.Dataset for imbalanced training."""
