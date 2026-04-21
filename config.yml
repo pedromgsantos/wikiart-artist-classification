@@ -39,3 +39,7 @@ models:
     checkpoint: ../models/vgg16_best.keras
     history: ../models/vgg16_history.json
     batch_size: 32
+  convnexttiny:
+    checkpoint: ../models/convnexttiny_best.keras
+    history: ../models/convnexttiny_history.json
+    batch_size: 32
