@@ -411,3 +411,42 @@ def predict_tta(model, test_ds, n_augmentations=5, batch_size=16):
 
     print(f"TTA Results - Loss: {test_loss:.4f} | Accuracy: {test_accuracy:.4f} | F1: {test_f1:.4f}")
     return test_loss, test_accuracy, test_f1, y_true, y_pred, preds_avg
+
+def evaluate_from_predictions(
+    y_true, y_pred, y_pred_probs,
+    class_names: list[str],
+    model_name: str = "Model",
+    test_loss: float = None,
+):
+    """
+    Same as evaluate_model() but takes predictions as input (no forward pass).
+    Useful for TTA, ensembles, or any setup where predictions were already computed.
+    """
+    test_acc = accuracy_score(y_true, y_pred)
+    test_f1 = f1_score(y_true, y_pred, average="macro")
+
+    print(f"\n{'='*50}")
+    print(f"  {model_name} - Test Evaluation")
+    print(f"{'='*50}")
+    if test_loss is not None:
+        print(f"  Test Loss:     {test_loss:.4f}")
+    print(f"  Test Accuracy: {test_acc:.4f}")
+    print(f"  Test F1 Macro: {test_f1:.4f}")
+
+    print(f"\nClassification Report:")
+    print(classification_report(y_true, y_pred, target_names=class_names))
+
+    plot_confusion_matrix(y_true, y_pred, class_names,
+                          title=f"Confusion Matrix - {model_name}")
+    plot_per_class_f1(y_true, y_pred, class_names,
+                      title=f"Per-Class F1 - {model_name}")
+
+    return {
+        "model_name": model_name,
+        "test_loss": test_loss if test_loss is not None else 0.0,
+        "test_accuracy": test_acc,
+        "test_f1_macro": test_f1,
+        "y_true": y_true,
+        "y_pred": y_pred,
+        "y_pred_probs": y_pred_probs,
+    }
