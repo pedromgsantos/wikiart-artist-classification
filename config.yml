@@ -28,16 +28,12 @@ models:
     history: "../models/residual_block/residual_block_history.json"
     batch_size: 32
   efficientnetb3:
-      checkpoint: ../models/efficientnetb3/efficientnetb3_best.keras
-      history: ../models/efficientnetb3/efficientnetb3_history.pkl
+      checkpoint: ../models/EfficientNetB3/efficientnetb3_best.keras
+      history: ../models/EfficientNetB3/efficientnetb3_history.pkl
   efficientnetb5:
-      checkpoint: ../models/efficientnetb5/efficientnetb5_best.keras
-      history: ../models/efficientnetb5/efficientnetb5_history.json
+      checkpoint: ../models/EfficientNetB5/efficientnetb5_best.keras
+      history: ../models/EfficientNetB5/efficientnetb5_history.json
   vgg16:
     checkpoint: ../models/vgg16/vgg16_best.keras
-    history: ../models/vgg16_history.json
-    batch_size: 32
-  convnexttiny:
-    checkpoint: ../models/convnexttiny_best.keras
-    history: ../models/convnexttiny_history.json
+    history: ../models/vgg16/vgg16_history.json
     batch_size: 32
