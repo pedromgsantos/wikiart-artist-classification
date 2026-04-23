@@ -1,1 +1,0 @@
-timestamp,trial_number,state,n_conv_blocks,filters_per_block,conv_act,pooling_type,use_bn,conv_dropout,n_dense_layers,dense_units,dense_act,dense_dropout,lr,epochs_trained,val_accuracy,val_f1_macro,best_val_accuracy,best_val_f1_macro,n_params

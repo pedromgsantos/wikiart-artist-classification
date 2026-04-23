@@ -29,7 +29,7 @@ models:
     batch_size: 32
   efficientnetb3:
       checkpoint: ../models/EfficientNetB3/efficientnetb3_best.keras
-      history: ../models/EfficientNetB3/efficientnetb3_history.pkl
+      history: ../models/EfficientNetB3/efficientnetb3_history.json
   efficientnetb5:
       checkpoint: ../models/EfficientNetB5/efficientnetb5_best.keras
       history: ../models/EfficientNetB5/efficientnetb5_history.json
