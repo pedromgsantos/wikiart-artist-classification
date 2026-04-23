@@ -409,7 +409,6 @@ def predict_tta(model, test_ds, n_augmentations=5, batch_size=16):
     test_accuracy = accuracy_score(y_true, y_pred)
     test_f1 = f1_score(y_true, y_pred, average="macro")
 
-    print(f"TTA Results - Loss: {test_loss:.4f} | Accuracy: {test_accuracy:.4f} | F1: {test_f1:.4f}")
     return test_loss, test_accuracy, test_f1, y_true, y_pred, preds_avg
 
 def evaluate_from_predictions(
