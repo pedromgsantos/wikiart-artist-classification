@@ -1,6 +1,5 @@
 # WikiArt Artist Classification
 Project for the Deep Learning course, Masters in Data Science and Advanced Analytics, NOVA IMS.
-This repository reflects a cleaned version of the project, with improved organization and documentation for clarity and reproducibility.
 
 ---
 
