@@ -5,10 +5,10 @@ This repository reflects a cleaned version of the project, with improved organiz
 ---
 
 ## Project Authors
-Carolina Luz – 20250409 – [20250409@novaims.unl.pt](mailto:20250409@novaims.unl.pt)
-João Paulo de Ávila – 20250436 – [20250436@novaims.unl.pt](mailto:20250436@novaims.unl.pt)
-Lucas Ferreira – 20250448 – [20250448@novaims.unl.pt](mailto:20250448@novaims.unl.pt)
-Pedro Santos – 20250399 – [20250399@novaims.unl.pt](mailto:20250399@novaims.unl.pt)
+Carolina Luz – 20250409 – [20250409@novaims.unl.pt](mailto:20250409@novaims.unl.pt) \
+João Paulo de Ávila – 20250436 – [20250436@novaims.unl.pt](mailto:20250436@novaims.unl.pt) \
+Lucas Ferreira – 20250448 – [20250448@novaims.unl.pt](mailto:20250448@novaims.unl.pt) \
+Pedro Santos – 20250399 – [20250399@novaims.unl.pt](mailto:20250399@novaims.unl.pt) \
 Pedro Fernandes – 20250418 – [20250418@novaims.unl.pt](mailto:20250418@novaims.unl.pt)
 
 ---
