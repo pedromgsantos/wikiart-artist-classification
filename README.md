@@ -44,6 +44,20 @@ A final ensemble combining ResNet50 and EfficientNetV2S with TTA, evaluated on a
 
 ---
 
+## Model Interpretability — Grad-CAM
+
+Grad-CAM was applied to visualise what the model focuses on when classifying a painting, projecting the most influential regions directly onto the original image as a colour heatmap.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/pedromgsantos/wikiart-artist-classification/main/docs/image.jpg"
+       alt="Grad-CAM example — Albrecht Dürer correct prediction"
+       width="850"/>
+</p>
+
+In this example the model correctly identifies the work as Albrecht Dürer, with the activation map concentrating on the central figures — precisely the dense, intricate linework that defines his engraving style.
+
+---
+
 ## Notebooks
 - **01_eda.ipynb** – data audit, near-duplicate detection, class distribution analysis, split strategy, and augmentation exploration
 - **02_baseline.ipynb** – minimal CNN baseline establishing a lower bound for accuracy and macro F1
